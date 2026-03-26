@@ -1,110 +1,110 @@
 ---
 name: recall
-description: Use when user wants to find old Obsidian notes by keyword, topic, or project name. Triggers on "/recall [keyword]", "搵返", "recall", "搵筆記", "有冇寫過"
+description: Use when user wants to find old Obsidian notes by keyword, topic, or project name. Triggers on "/recall [keyword]", "search notes", "find notes", "recall", "have I written about"
 ---
 
-# Recall — Obsidian 筆記搜索
+# Recall — Obsidian Note Search
 
-快速搵返 vault 入面相關嘅舊筆記，評分排序後展示。
+Quickly find relevant notes in the vault by keyword, scored and ranked.
 
-**只做搜索同展示，絕對唔移動或修改任何筆記。**
+**Search and display only — never move or modify any notes.**
 
-**Vault：** `{{VAULT}}`
+**Vault:** `{{VAULT}}`
 
 ## Process
 
-### Step 1 — 理解搜索意圖
+### Step 1 — Understand Search Intent
 
-分析用戶 keyword，擴展成 2-5 個相關搜索詞。
+Analyze the user's keyword and expand into 2-5 related search terms.
 
-例如：
+Examples:
 - `/recall Paperclip` → "Paperclip", "AI orchestrator", "agents", "automation"
-- `/recall 水晶` → "水晶", "crystal", "金米", "kimmi", "手串"
+- `/recall crystal` → "crystal", "金米", "kimmi", "bracelet"
 
-### Step 2 — 全 Vault 搜索
+### Step 2 — Full Vault Search
 
-**唔分資料夾，一次過搜成個 vault。** 用 3 種方式 parallel 搜索每個搜索詞：
+**Search the entire vault at once, not folder by folder.** Use 3 methods in parallel for each search term:
 
-1. **文件名** — Glob tool：
+1. **Filename** — Glob tool:
    ```
    Glob: pattern = "**/*keyword*", path = "{{VAULT}}"
    ```
 
-2. **Tags** — Grep tool：
+2. **Tags** — Grep tool:
    ```
    Grep: pattern = "tags:.*keyword", path = "{{VAULT}}", glob = "**/*.md", -i = true
    ```
 
-3. **內容** — Grep tool（直接攞 context，唔使之後再 Read）：
+3. **Content** — Grep tool (fetch context directly, no need to Read afterwards):
    ```
    Grep: pattern = "keyword", path = "{{VAULT}}", glob = "**/*.md", -i = true, output_mode = "content", -C = 2, head_limit = 50
    ```
 
-**所有搜索詞 parallel 跑。** 如果結果太多（>50 篇），只取每種方式前 10 個 match。
+**Run all search terms in parallel.** If results are too many (>50 notes), take only the top 10 matches per method.
 
-### Step 3 — 評分排序
+### Step 3 — Score and Rank
 
-對所有結果去重後評分：
+Deduplicate all results, then score:
 
-| 條件 | 分數 |
-|------|------|
-| 文件名命中 | +3 |
-| Tags 命中 | +2 |
-| 內容命中（每個唔同搜索詞 +1，最多 +3） | +1 ~ +3 |
-| 位於 `30 - Notes/` | +2 bonus |
-| 位於 `10 - Projects/` | +1 bonus |
-| 近期修改（30 日內） | +1 bonus |
+| Condition | Score |
+|-----------|-------|
+| Filename match | +3 |
+| Tags match | +2 |
+| Content match (+1 per distinct search term, max +3) | +1 ~ +3 |
+| Located in `30 - Notes/` | +2 bonus |
+| Located in `10 - Projects/` | +1 bonus |
+| Recently modified (within 30 days) | +1 bonus |
 
-取 Top 10，同分按資料夾優先級排：30 > 10 > 20 > 00 > 40 > 99。
+Take Top 10. Break ties by folder priority: 30 > 10 > 20 > 00 > 40 > 99.
 
-### Step 4 — 展示結果
+### Step 4 — Display Results
 
-對 Top 10 每篇筆記，用 Step 2 嘅 Grep content 結果提煉一句核心觀點（唔使再 Read，除非 context 唔夠）。
+For each Top 10 note, distill a one-sentence key insight from the Step 2 Grep content results (no need to Read unless context is insufficient).
 
 ```
-🔍 `/recall [keyword]` 結果
+🔍 `/recall [keyword]` results
 
-找到 N 篇相關筆記：
+Found N related notes:
 
-**🔝 最相關**
-1. [[筆記名]] （30 - Notes）⭐ X 分
-   > [一句核心觀點]
+**🔝 Most Relevant**
+1. [[Note Name]] (30 - Notes) ⭐ X pts
+   > [One-sentence key insight]
 
-2. [[筆記名]] （10 - Projects/XXX）⭐ X 分
-   > [一句摘要]
+2. [[Note Name]] (10 - Projects/XXX) ⭐ X pts
+   > [One-sentence summary]
 
-3. [[筆記名]] （20 - Areas/YYY）⭐ X 分
-   > [一句摘要]
+3. [[Note Name]] (20 - Areas/YYY) ⭐ X pts
+   > [One-sentence summary]
 
-**📁 其他相關**
+**📁 Other Related**
 4-10. ...
 
-**🕸️ 相關筆記網絡**
-[[筆記A]] ← → [[筆記B]]（基於 wikilinks）
+**🕸️ Related Note Network**
+[[Note A]] ← → [[Note B]] (based on wikilinks)
 
-💡 建議：[具體可行嘅建議]
+💡 Suggestion: [specific actionable suggestion]
 ```
 
-### Step 5 — 可選操作
+### Step 5 — Follow-up Actions
 
 ```
-📌 可以做：
-- 輸入筆記編號睇全文
-- `/recall [另一個 keyword]` 搜索其他主題
-- `/daily-review` 處理 Inbox 相關筆記
+📌 Available actions:
+- Enter a note number to view full content
+- `/recall [another keyword]` to search a different topic
+- `/daily-review` to process related Inbox notes
 ```
 
-用戶輸入數字 → Read 對應筆記全文展示。
+When the user enters a number, Read and display the corresponding note in full.
 
 ## Edge Cases
 
-- **0 篇結果：** 建議 2-3 個相近 keyword 再試
-- **中文搜索詞：** Grep 正常支援
-- **資料夾唔存在：** Skip，唔 error
+- **0 results:** Suggest 2-3 similar keywords to retry
+- **Chinese search terms:** Grep supports them natively
+- **Missing folders:** Skip silently, do not error
 
 ## Guidelines
 
-- **唯讀** — 絕對唔改、搬、刪筆記
-- 粵語摘要，技術名詞保留英文
-- Case insensitive 搜索
-- `[[筆記名]]` 唔包 `.md`
+- **Read-only** — never modify, move, or delete notes
+- Summaries in the user's language; keep technical terms in English
+- Case insensitive search
+- `[[Note Name]]` without `.md` extension

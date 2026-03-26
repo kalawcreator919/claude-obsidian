@@ -1,21 +1,21 @@
 ---
 name: weekly-review
-description: Use when a week has passed since last review, or user wants to analyze knowledge accumulation trends and resurface valuable old notes. Triggers on "/weekly-review", "weekly review", "每週回顧"
+description: Use when a week has passed since last review, or user wants to analyze knowledge accumulation trends and resurface valuable old notes. Triggers on "/weekly-review", "weekly review".
 ---
 
 # Weekly Review
 
-每週知識回顧 — 分析 Obsidian vault 嘅知識累積方向，resurface 有價值嘅舊筆記。
+Weekly knowledge review — analyze knowledge accumulation trends in the Obsidian vault and resurface valuable older notes.
 
-**Vault 路徑：** `{{VAULT}}`
-**Report 輸出：** `40 - Daily/YYYY-MM-DD Weekly Review.md`
-**唯讀：** 只分析，唔改任何現有筆記
+**Vault path:** `{{VAULT}}`
+**Report output:** `40 - Daily/YYYY-MM-DD Weekly Review.md`
+**Read-only:** Analysis only; do not modify any existing notes.
 
 ## Process
 
-### Step 1 — 建立 Vault Context
+### Step 1 — Build Vault Context
 
-掃描 vault 結構，了解現有 Projects/Areas/Notes：
+Scan the vault structure to understand existing Projects/Areas/Notes:
 
 ```bash
 ls "{{VAULT}}/10 - Projects/"
@@ -23,54 +23,54 @@ ls "{{VAULT}}/20 - Areas/"
 ls "{{VAULT}}/30 - Notes/"
 ```
 
-### Step 2 — 收集本週資料
+### Step 2 — Collect This Week's Data
 
-搵過去 7 日內新增或修改嘅所有 `.md` 筆記：
+Find all `.md` notes created or modified in the past 7 days:
 
 ```bash
 find "{{VAULT}}" -name "*.md" -mtime -7 -not -path "*/.obsidian/*" -not -path "*/.trash/*"
 ```
 
-用 Read tool 讀取每篇筆記，記錄：
-- 筆記檔名、所在資料夾
+Use the Read tool to read each note and record:
+- Filename and containing folder
 - Frontmatter tags
-- 內容長度
-- Wikilinks 數量
+- Content length
+- Number of wikilinks
 
-### Step 3 — Tags 分析
+### Step 3 — Tag Analysis
 
-統計每個 tag 出現次數。
+Count the occurrences of each tag.
 
-**排除 meta tags：** `daily`, `review`, `weekly-review`, `inbox`, `fleeting`, `active`, `completed`, `archived`, `archive`, `projects`, `areas`, `notes`
+**Exclude meta tags:** `daily`, `review`, `weekly-review`, `inbox`, `fleeting`, `active`, `completed`, `archived`, `archive`, `projects`, `areas`, `notes`
 
-揀出最高頻嘅 **3 個核心主題**，每個寫一句描述。
+Identify the **3 most frequent core topics** and write a one-sentence description for each.
 
-### Step 4 — 筆記價值評估
+### Step 4 — Note Value Assessment
 
-對每篇本週筆記評分（1-5）：
+Score each note from this week (1-5):
 
-| 標準 | 高分特徵 |
-|------|---------|
-| 內容完整度 | 有技術細節、決策背景、步驟記錄 |
-| Wikilinks 數量 | 連結越多，知識網絡越豐富 |
-| Insight 深度 | 有洞察、反思，唔止係事實記錄 |
-| 可重用性 | 可以被其他筆記引用 |
+| Criterion | High-score indicators |
+|-----------|----------------------|
+| Content completeness | Contains technical details, decision context, step-by-step records |
+| Wikilink count | More links = richer knowledge network |
+| Insight depth | Contains analysis and reflection, not just factual records |
+| Reusability | Can be referenced by other notes |
 
-選出 **Top 3-5 最有價值嘅筆記**，每篇附一句說明。
+Select the **Top 3-5 most valuable notes** with a one-sentence explanation for each.
 
-### Step 5 — Resurface 舊筆記
+### Step 5 — Resurface Older Notes
 
-基於 Step 3 嘅 3 個核心主題，用 Grep tool 搵相關嘅舊筆記（超過 7 日前）：
+Based on the 3 core topics from Step 3, use the Grep tool to find related older notes (more than 7 days old):
 
 ```
-Grep: pattern = "主題關鍵字", path = "{{VAULT}}", glob = "**/*.md", output_mode = "files_with_matches", -i = true
+Grep: pattern = "topic keyword", path = "{{VAULT}}", glob = "**/*.md", output_mode = "files_with_matches", -i = true
 ```
 
-排除本週已處理嘅筆記。每個主題搵 1-3 篇，簡述點解值得重新睇。
+Exclude notes already processed this week. Find 1-3 notes per topic and briefly explain why they are worth revisiting.
 
-### Step 6 — 生成 Weekly Report
+### Step 6 — Generate Weekly Report
 
-計算本週日期範圍（週一至週日）。寫入 `40 - Daily/YYYY-MM-DD Weekly Review.md`：
+Calculate this week's date range (Monday to Sunday). Write to `40 - Daily/YYYY-MM-DD Weekly Review.md`:
 
 ```markdown
 ---
@@ -84,39 +84,39 @@ tags: [daily, weekly-review]
 # YYYY-MM-DD Weekly Review
 Week of YYYY-MM-DD to YYYY-MM-DD
 
-## 本週知識累積
+## Knowledge Accumulation This Week
 
-### Tags 統計
-| Tag | 出現次數 | 主要筆記 |
-|-----|---------|---------|
-| tag-name | N | [[筆記A]], [[筆記B]] |
+### Tag Statistics
+| Tag | Occurrences | Key Notes |
+|-----|-------------|-----------|
+| tag-name | N | [[Note A]], [[Note B]] |
 
-### 3 個核心主題
-1. **[主題名]** — [一句描述]
+### 3 Core Topics
+1. **[Topic name]** — [One-sentence description]
 2. ...
 3. ...
 
-## 本週最有價值筆記
+## Most Valuable Notes This Week
 
-1. **[[筆記名]]**（5/5）— [點解有價值]
+1. **[[Note name]]** (5/5) — [Why it is valuable]
 2. ...
 
-## 值得 Revisit 嘅舊筆記
-- [[舊筆記名]] — [點解相關]
+## Older Notes Worth Revisiting
+- [[Old note name]] — [Why it is relevant]
 
-## 本週總結
-- 新增筆記：N 篇
-- 修改筆記：N 篇
-- 最活躍嘅資料夾：XXX
-- 下週建議關注：[基於趨勢嘅建議]
+## Weekly Summary
+- Notes created: N
+- Notes modified: N
+- Most active folder: XXX
+- Suggested focus for next week: [Trend-based recommendation]
 ```
 
-**Edge case：** 如果本週冇筆記，report 寫明「本週冇新增或修改筆記」，唔好生成空表格。
+**Edge case:** If there are no notes this week, the report should state "No notes were created or modified this week" instead of generating empty tables.
 
 ## Important Rules
 
-1. **唯讀** — 唔改任何現有筆記，只產出 report
-2. **粵語 report** — 技術名詞保留英文
-3. **Wikilinks 用 `[[筆記名]]`** — 唔包路徑，只用檔名（去掉 `.md`）
-4. **評分要有依據** — 每個分數都要解釋
-5. **如果已有同日 Weekly Review** — 用 Edit tool 追加而唔係覆蓋
+1. **Read-only** — Do not modify any existing notes; only produce the report.
+2. **English report** — Keep technical terms as-is (folder names, tool names, frontmatter fields).
+3. **Wikilinks use `[[Note name]]`** — No paths, filename only (without `.md`).
+4. **Scores must be justified** — Provide an explanation for every score.
+5. **If a Weekly Review already exists for the same date** — Use the Edit tool to append rather than overwrite.

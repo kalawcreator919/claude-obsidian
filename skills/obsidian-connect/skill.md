@@ -5,84 +5,84 @@ description: Use when connecting to Obsidian, verifying vault access, or trouble
 
 # Obsidian Connect
 
-驗證 Obsidian vault 連接。優先用 CLI，fallback 用 Read/Write/Edit tool。
+Verify Obsidian vault connection. Prefer CLI; fall back to Read/Write/Edit tools.
 
 ## When to Use
 
-- 用戶話要連接 Obsidian
-- Obsidian CLI 指令失敗
-- 驗證 vault 存取
+- User requests to connect to Obsidian
+- Obsidian CLI commands fail
+- Verifying vault access
 
 ## Connection
 
 **Vault:** `{{VAULT}}`
-**Method:** Obsidian CLI（需要 Obsidian 1.12+ 運行中 + Settings → General → CLI 開啟）
+**Method:** Obsidian CLI (requires Obsidian 1.12+ running + Settings → General → CLI enabled)
 
-### 驗證連接
+### Verify Connection
 
 ```bash
 obsidian read vault="Obsidian" file="Home"
 ```
 
-成功返回 Home.md 內容；失敗就試 fallback。
+On success, returns the contents of Home.md. On failure, try the fallback method.
 
 ## CLI Commands
 
-| 操作 | 指令 |
-|------|------|
-| 讀取 | `obsidian read vault="Obsidian" file="<name>"` |
-| 建立 | `obsidian create vault="Obsidian" name="YYYY-MM-DD Title" content="..."` |
-| 追加 | `obsidian append vault="Obsidian" file="<name>" content="..."` |
-| 搜索 | `obsidian search vault="Obsidian" query="keyword"` |
-| 每日筆記 | `obsidian daily vault="Obsidian"` |
-| 任務 | `obsidian tasks vault="Obsidian" todo` |
+| Action | Command |
+|--------|---------|
+| Read | `obsidian read vault="Obsidian" file="<name>"` |
+| Create | `obsidian create vault="Obsidian" name="YYYY-MM-DD Title" content="..."` |
+| Append | `obsidian append vault="Obsidian" file="<name>" content="..."` |
+| Search | `obsidian search vault="Obsidian" query="keyword"` |
+| Daily note | `obsidian daily vault="Obsidian"` |
+| Tasks | `obsidian tasks vault="Obsidian" todo` |
 
-**Windows 注意：** 用 `Obsidian.com`（唔係 `Obsidian.exe`）先有正確嘅 stdin/stdout。
+**Windows note:** Use `Obsidian.com` (not `Obsidian.exe`) for correct stdin/stdout handling.
 
-**Content 格式：** 值有空格要加引號，用 `\n` 換行，`\t` tab。
+**Content format:** Quote values containing spaces. Use `\n` for newlines, `\t` for tabs.
 
 ## Steps
 
-1. 執行 `obsidian read vault="Obsidian" file="Home"` 測試連接
-2. 成功：報告連接正常
-3. 失敗：檢查以下
-   - Obsidian desktop 有冇開？
-   - CLI 有冇 enable？（Settings → General → Command line interface）
-   - 版本係咪 1.12+？
-   - Windows 有冇用 `Obsidian.com`？
+1. Run `obsidian read vault="Obsidian" file="Home"` to test the connection
+2. Success: report that the connection is working
+3. Failure: check the following
+   - Is Obsidian desktop running?
+   - Is CLI enabled? (Settings → General → Command line interface)
+   - Is the version 1.12+?
+   - On Windows, are you using `Obsidian.com`?
 
-## Fallback（CLI 唔 work 時）
+## Fallback (when CLI is unavailable)
 
-用 Read/Write/Edit tool 直接操作 vault markdown 檔案：
+Use Read/Write/Edit tools to operate on vault markdown files directly:
 
 ```
-Read: {{VAULT}}\00 - Inbox\筆記名.md
-Write: {{VAULT}}\00 - Inbox\新筆記.md
-Edit: {{VAULT}}\30 - Notes\現有筆記.md
+Read: {{VAULT}}\00 - Inbox\note-name.md
+Write: {{VAULT}}\00 - Inbox\new-note.md
+Edit: {{VAULT}}\30 - Notes\existing-note.md
 ```
 
 ## Common Mistakes
 
-| 問題 | 原因 | 解決 |
-|------|------|------|
-| Unable to connect to main process | Obsidian 未開或 CLI 未 enable | 開 Obsidian + enable CLI setting |
-| Command not found | CLI 未加入 PATH | Windows: 確認用 `Obsidian.com` |
-| Colon subcommand 唔 work | Windows Git Bash 將 `:` 解析成 drive path | 用 `MSYS_NO_PATHCONV=1` 或用 fallback |
+| Problem | Cause | Solution |
+|---------|-------|----------|
+| Unable to connect to main process | Obsidian not running or CLI not enabled | Launch Obsidian + enable CLI setting |
+| Command not found | CLI not in PATH | Windows: confirm using `Obsidian.com` |
+| Colon subcommand not working | Windows Git Bash parses `:` as a drive path | Use `MSYS_NO_PATHCONV=1` or use the fallback method |
 
 ## Vault Structure
 
 ```
-00 - Inbox/          收集層：所有新筆記入口
-01 - Active/         每日常開筆記（5-10 篇）
-10 - Projects/       有期限嘅項目
-20 - Areas/          冇期限、持續關注嘅主題
-30 - Notes/          原子筆記（一個想法 = 一篇）
-40 - Daily/          日記 + Review 報告
-99 - Archive/        完成/過時嘅筆記
-    Sessions/        處理完嘅 session logs
+00 - Inbox/          Collection layer: entry point for all new notes
+01 - Active/         Frequently opened notes (5-10 max)
+10 - Projects/       Time-bound projects
+20 - Areas/          Ongoing topics with no deadline
+30 - Notes/          Atomic notes (one idea = one note)
+40 - Daily/          Journal + review reports
+99 - Archive/        Completed or outdated notes
+    Sessions/        Processed session logs
 Attachments/
 Home.md
 Templates/
 ```
 
-Note 命名格式：`YYYY-MM-DD Title.md`（日期必須喺前面）
+Note naming format: `YYYY-MM-DD Title.md` (date must come first)

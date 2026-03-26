@@ -1,159 +1,159 @@
 ---
 name: daily-review
-description: Use when Obsidian Inbox has notes to process - splits multi-topic notes into atomic pieces, classifies and moves to correct vault location. Triggers on "/daily-review", "處理 inbox", "review inbox", "整理筆記"
+description: Use when Obsidian Inbox has notes to process - splits multi-topic notes into atomic pieces, classifies and moves to correct vault location. Triggers on "/daily-review", "process inbox", "review inbox", "organize notes"
 ---
 
 # Daily Review
 
-消化 `00 - Inbox/` 嘅筆記：拆分多主題 → 分類 → 搬去正確位置。
+Process notes in `00 - Inbox/`: split multi-topic notes into atomic pieces, classify, and move to the correct location.
 
-**核心原則：一個話題/想法 = 一篇筆記。**
+**Core principle: one topic/idea = one note.**
 
-## 常量
+## Constants
 
-- **Vault**：`{{VAULT}}`
-- **今日日期**：用 `date +%Y-%m-%d` 取得
+- **Vault**: `{{VAULT}}`
+- **Today's date**: obtain via `date +%Y-%m-%d`
 
 ## Process
 
-### Step 1 — 掃描 Inbox
+### Step 1 — Scan Inbox
 
-用 Bash `ls` 列出 `00 - Inbox/` 入面所有 `.md` 檔案。
+Use Bash `ls` to list all `.md` files in `00 - Inbox/`.
 
-- 跳過 `_index.md`
-- 如果 Inbox 冇筆記，通知用戶「Inbox 清晒，冇嘢要處理」然後結束
-- 列出筆記清單俾用戶睇，顯示檔案名同第一行內容摘要
+- Skip `_index.md`
+- If Inbox is empty, notify the user "Inbox is clear, nothing to process" and stop
+- Show the user a list of notes with filenames and a one-line summary of each
 
-### Step 2 — 建立 Vault Context
+### Step 2 — Build Vault Context
 
-喺分類之前，先了解 vault 現有結構。呢步嘅結果會用喺之後所有分類、wikilinks 同搬移步驟。
+Before classifying, survey the existing vault structure. Results from this step are reused in all subsequent classification, wikilink, and move steps.
 
-1. `ls` 掃描 `10 - Projects/`、`20 - Areas/`、`30 - Notes/` 嘅子資料夾同檔案名
-2. 對每個 project 子資料夾，讀 Overview / 主文件（如有），了解 project scope
-3. 記住呢個結構，之後唔使重複掃描
+1. `ls` to scan subfolders and filenames in `10 - Projects/`, `20 - Areas/`, `30 - Notes/`
+2. For each project subfolder, read the Overview / main file (if any) to understand project scope
+3. Cache this structure — no need to rescan later
 
-### Step 3 — 讀取 Inbox 筆記
+### Step 3 — Read Inbox Notes
 
-用 Read tool 讀取每篇 Inbox 筆記嘅完整內容（frontmatter + body）。
+Use the Read tool to read the full content (frontmatter + body) of each Inbox note.
 
-**讀取順序：短筆記先（body < 20 行），長筆記後。**
+**Reading order: short notes first (body < 20 lines), long notes after.**
 
-短筆記通常係單一主題，可以快速處理；長筆記（session logs、方案研究）多數需要拆分。
+Short notes are usually single-topic and can be processed quickly; long notes (session logs, research docs) usually need splitting.
 
-### Step 4 — 拆分多主題筆記
+### Step 4 — Split Multi-Topic Notes
 
-對每篇筆記判斷需唔需要拆分。
+For each note, determine whether it needs splitting.
 
-**需要拆嘅信號：**
-- 標題有 `+` 或 `、` 連接多個主題
-- 內容有多個 `##`/`###` section 講完全唔同嘅事
-- Session log 記錄咗多件獨立工作
+**Signals that splitting is needed:**
+- Title contains `+` or comma-like delimiters joining multiple topics
+- Content has multiple `##`/`###` sections covering entirely different subjects
+- Session log records multiple independent tasks
 
-**唔使拆嘅情況：**
-- 只有一個核心主題（子 section 圍繞同一件事）
-- Body 少過 5 行
-- 已經係原子筆記（`type: note`）
+**No split needed when:**
+- There is only one core topic (sub-sections all relate to the same thing)
+- Body is fewer than 5 lines
+- Already an atomic note (`type: note`)
 
-**拆分流程：**
+**Splitting workflow:**
 
-1. 識別獨立主題，每個主題提取為一篇新筆記
-2. 新筆記格式：
-   - 檔名：`YYYY-MM-DD 主題標題.md`（日期沿用原筆記）
-   - Frontmatter：
+1. Identify independent topics and extract each into a new note
+2. New note format:
+   - Filename: `YYYY-MM-DD Topic Title.md` (reuse the original note's date)
+   - Frontmatter:
      ```yaml
-     title: "主題標題"
-     date: "原筆記日期"
-     type: {{按內容判斷}}
+     title: "Topic Title"
+     date: "original note date"
+     type: {{determined by content}}
      status: active
-     tags: [inbox, {{相關 tags}}]
-     source_note: "[[原筆記名]]"
+     tags: [inbox, {{relevant tags}}]
+     source_note: "[[original note name]]"
      ```
-   - Body：從原筆記提取相關內容，**保持原文，唔好改寫或摘要**
-   - 底部加 `## Related` 連結返原筆記同其他拆出嚟嘅筆記
-3. 原筆記處理：
-   - 更新 frontmatter：tags 第一個改 `archive`，status 改 `archived`
-   - 底部加 `## 拆分筆記` section，列出所有子筆記 wikilinks
-   - 搬去 `99 - Archive/Sessions/`
-4. 用 Write tool 寫入子筆記（寫入目標位置前，先暫放 Inbox）
-5. **用 Read tool 讀返每篇子筆記，驗證內容完整、冇漏嘢**
-6. 驗證通過後，子筆記進入 Step 5 分類
+   - Body: extract relevant content from the original note — **preserve original text, do not rewrite or summarize**
+   - Add a `## Related` section at the bottom linking back to the original note and other split notes
+3. Handle the original note:
+   - Update frontmatter: change first tag to `archive`, set status to `archived`
+   - Add a `## Split Notes` section at the bottom listing all child note wikilinks
+   - Move to `99 - Archive/Sessions/`
+4. Use the Write tool to create child notes (write to Inbox first before moving to final destination)
+5. **Use the Read tool to re-read each child note and verify content is complete with nothing missing**
+6. After verification passes, child notes proceed to Step 5 for classification
 
-**注意：**
-- 如果原筆記有「未完成 / Follow-up」section，將每個 follow-up 歸入相關嘅子筆記
-- 跨主題內容（例如比較表）複製到所有相關筆記
-- **同名檔案 guard**：寫入前檢查目標路徑有冇同名檔案，有就喺檔名加 ` (2)` 後綴
+**Notes:**
+- If the original note has an "Incomplete / Follow-up" section, assign each follow-up to the relevant child note
+- Cross-topic content (e.g., comparison tables) should be copied to all relevant notes
+- **Duplicate filename guard**: before writing, check if a file with the same name exists at the target path; if so, append ` (2)` to the filename
 
-### Step 5 — 三問決策樹分類
+### Step 5 — Three-Question Decision Tree Classification
 
-對每篇筆記（原本單主題 + Step 4 拆出嚟嘅子筆記），行決策樹：
+For each note (original single-topic notes + child notes from Step 4), run the decision tree:
 
-**前置規則：**
-- `source: "Claude Code Session"` 且 Step 4 判定唔使拆 → 直接去 `99 - Archive/Sessions/`，唔使行三問
+**Pre-classification rule:**
+- `source: "Claude Code Session"` AND Step 4 determined no split needed → move directly to `99 - Archive/Sessions/`, skip the three questions
 
-**Q1：有冇期限/明確終點？** → 有 → `10 - Projects/{project名}/`
-**Q2：係持續性主題？** → 係 → `20 - Areas/{area名}/`
-**Q3：可以獨立存在嘅想法/洞察？** → 係 → `30 - Notes/`
-**全部冇** → 保留 `00 - Inbox/`
+**Q1: Does it have a deadline or a clear endpoint?** → Yes → `10 - Projects/{project name}/`
+**Q2: Is it an ongoing area of responsibility?** → Yes → `20 - Areas/{area name}/`
+**Q3: Is it a standalone idea or insight?** → Yes → `30 - Notes/`
+**None of the above** → keep in `00 - Inbox/`
 
-用 Step 2 嘅 vault context 決定具體嘅 project/area 子資料夾。
+Use the vault context from Step 2 to determine the specific project/area subfolder.
 
-**信心門檻：**
-- `>80%` → 自動搬，記錄落 report
-- `≤80%` → 加入待確認清單（Step 7）
+**Confidence threshold:**
+- `>80%` → auto-move, record in report
+- `≤80%` → add to confirmation list (Step 7)
 
-對每篇筆記記錄：`filename`、`destination`、`confidence`、`reason`、`new_title`（去 Notes 先要）
+For each note, record: `filename`, `destination`, `confidence`, `reason`, `new_title` (only needed for Notes)
 
-### Step 6 — 補充 Wikilinks
+### Step 6 — Add Wikilinks
 
-用 Step 2 嘅 vault context（唔使重新掃描），對每篇要搬嘅筆記：
+Using the vault context from Step 2 (no rescan needed), for each note to be moved:
 
-1. 比較內容，搵語義相關嘅現有筆記
-2. 喺筆記 body 底部加 `## Related` section，列出 `[[筆記名]]` wikilinks
-3. 如果已經有足夠 wikilinks，唔使再加
+1. Compare content to find semantically related existing notes
+2. Add a `## Related` section at the bottom of the note body with `[[note name]]` wikilinks
+3. If the note already has sufficient wikilinks, do not add more
 
-**只加有意義嘅連結，唔好為加而加。**
+**Only add meaningful links — do not add links for the sake of it.**
 
-### Step 7 — 執行搬移（自動部分）
+### Step 7 — Execute Moves (Auto Portion)
 
-對所有信心 >80% 嘅筆記執行搬移。
+Execute moves for all notes with confidence >80%.
 
-**通用搬移 pattern：**
-1. 確認目標資料夾存在（唔存在 → `mkdir -p`）
-2. **同名檔案 guard**：檢查目標有冇同名檔案
-3. 用 Edit tool 更新 frontmatter tags 第一個值（見下表）
-4. 用 Bash `mv` 搬移
+**Standard move pattern:**
+1. Confirm the target folder exists (if not → `mkdir -p`)
+2. **Duplicate filename guard**: check if target has a file with the same name
+3. Use the Edit tool to update the first value in frontmatter tags (see table below)
+4. Use Bash `mv` to move
 
-| 目標 | tags 第一個值 | status | 額外動作 |
-|------|-------------|--------|---------|
-| `10 - Projects/{name}/` | `projects` | 不變 | — |
-| `20 - Areas/{name}/` | `areas` | 不變 | — |
-| `30 - Notes/` | `notes` | 不變 | 標題改成斷言句（詞語→觀點句） |
+| Destination | First tag value | status | Additional action |
+|-------------|----------------|--------|-------------------|
+| `10 - Projects/{name}/` | `projects` | unchanged | — |
+| `20 - Areas/{name}/` | `areas` | unchanged | — |
+| `30 - Notes/` | `notes` | unchanged | Rewrite title as an assertion (keyword → opinion statement) |
 | `99 - Archive/Sessions/` | `archive` | `archived` | — |
 
-**搬移指令：**
+**Move command:**
 ```bash
-mv "{{VAULT}}/來源/檔名.md" "{{VAULT}}/目標/新檔名.md"
+mv "{{VAULT}}/source/filename.md" "{{VAULT}}/destination/new_filename.md"
 ```
 
-### Step 8 — 待確認清單
+### Step 8 — Confirmation List
 
-如果有信心 ≤80% 嘅筆記，列出清單：
+If any notes have confidence ≤80%, present a list:
 
 ```
-以下筆記需要你決定去向：
+The following notes need your decision on where to file them:
 
-1. 「筆記標題」— [摘要一句話]
-   建議：10 - Projects/XXX（因為...）
-   選項：a) Projects/XXX  b) Areas/YYY  c) Notes  d) 保留 Inbox
+1. "Note Title" — [one-line summary]
+   Suggestion: 10 - Projects/XXX (because...)
+   Options: a) Projects/XXX  b) Areas/YYY  c) Notes  d) Keep in Inbox
 
 2. ...
 ```
 
-等用戶回覆後執行搬移（同 Step 7 流程）。全部自動就跳過。
+Wait for user response, then execute moves (same flow as Step 7). If all notes were auto-moved, skip this step.
 
-### Step 9 — 生成 Daily Report
+### Step 9 — Generate Daily Report
 
-寫入 `40 - Daily/YYYY-MM-DD Daily Review.md`。如果已存在，用 Edit tool 追加。
+Write to `40 - Daily/YYYY-MM-DD Daily Review.md`. If it already exists, use the Edit tool to append.
 
 ```markdown
 ---
@@ -166,39 +166,39 @@ tags: [daily, review]
 
 # YYYY-MM-DD Daily Review
 
-## Inbox 處理
-處理咗 N 篇筆記
+## Inbox Processing
+Processed N notes
 
-| 筆記 | 去向 | 備注 |
-|------|------|------|
-| [[筆記名]] | 目標資料夾 | 自動/待確認 |
+| Note | Destination | Remarks |
+|------|-------------|---------|
+| [[note name]] | target folder | auto / pending confirmation |
 
-## 拆分筆記
-（冇就寫「冇筆記需要拆分」）
+## Split Notes
+(If none, write "No notes needed splitting")
 
-| 原筆記 | 拆出 |
-|--------|------|
-| [[原筆記名]] | [[子筆記A]]、[[子筆記B]] |
+| Original Note | Split Into |
+|---------------|------------|
+| [[original note name]] | [[child note A]], [[child note B]] |
 
-## 待確認結果
-（冇就寫「全部自動處理」）
+## Confirmation Results
+(If none, write "All notes processed automatically")
 
-## 新增 Wikilinks
-- [[筆記A]] 加咗 → [[筆記B]]
+## New Wikilinks
+- [[Note A]] linked to → [[Note B]]
 
-## 孤立筆記提醒
-以下筆記冇任何 wikilinks，建議加連結：
-- [[筆記名]]
+## Orphan Note Reminders
+The following notes have no wikilinks — consider adding connections:
+- [[note name]]
 ```
 
-**注意：** Report 用粵語。確認 `40 - Daily/` 存在。
+**Note:** Confirm `40 - Daily/` exists before writing.
 
-## 重要規則
+## Important Rules
 
-1. **唔好改寫筆記內容** — 只改 frontmatter（title、tags、status）同加 wikilinks；拆分時提取原文，唔好摘要或改寫
-2. **搬移用 `mv`** — 唔好 copy + delete
-3. **斷言句標題** — 只有去 `30 - Notes/` 嘅筆記先改（例：「Git Hooks」→「Git Hooks 可以自動化 commit 前嘅檢查」）
-4. **保留 frontmatter** — 搬移時唔好刪除任何現有欄位
-5. **資料夾唔存在就建** — `mkdir -p`
-6. **同名檔案 guard** — 搬移/寫入前檢查目標有冇同名，有就加 ` (2)` 後綴
-7. **冪等性** — 同一日跑多次唔會出問題：Daily Report 追加唔覆蓋，已搬走嘅筆記唔會再出現喺 Inbox
+1. **Do not rewrite note content** — only modify frontmatter (title, tags, status) and add wikilinks; when splitting, extract original text as-is — do not summarize or rewrite
+2. **Use `mv` for moves** — do not copy + delete
+3. **Assertion titles** — only rewrite titles for notes going to `30 - Notes/` (e.g., "Git Hooks" → "Git Hooks can automate pre-commit checks")
+4. **Preserve frontmatter** — do not delete any existing fields when moving
+5. **Create folders if missing** — `mkdir -p`
+6. **Duplicate filename guard** — before moving or writing, check if a file with the same name exists at the target; if so, append ` (2)` to the filename
+7. **Idempotency** — running multiple times on the same day causes no issues: Daily Report appends without overwriting, already-moved notes do not reappear in Inbox
