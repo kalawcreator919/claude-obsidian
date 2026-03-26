@@ -113,6 +113,24 @@ description: Use when Obsidian Inbox has notes to process - splits multi-topic n
 
 **只加有意義嘅連結，唔好為加而加。**
 
+### Step 6.5 — 品質評分
+
+對每篇要搬嘅筆記（唔包括去 Archive 嘅），自動判斷品質等級並寫入 frontmatter。
+
+**評分規則：**
+
+| quality | 條件（符合任意一項即可） |
+|---------|------------------------|
+| `high` | 有決策記錄或技術細節或原創洞察；wikilinks ≥ 3；字數 > 300 且有結構（≥ 3 個 section） |
+| `medium` | 有結構（≥ 2 個 section）；字數 100-300；有 frontmatter 且 tags ≥ 2 |
+| `low` | 純剪貼 / 冇結構 / 少過 100 字 / frontmatter 缺欄位 |
+
+**執行：** 用 Edit tool 喺 frontmatter 加入 `quality: high/medium/low`（加喺 `status:` 之後）。
+
+**注意：**
+- 去 `99 - Archive/` 嘅筆記唔使評品質
+- 已有 `quality` 欄位嘅筆記唔使覆蓋
+
 ### Step 7 — 執行搬移（自動部分）
 
 對所有信心 >80% 嘅筆記執行搬移。
@@ -150,6 +168,36 @@ mv "{{VAULT}}/來源/檔名.md" "{{VAULT}}/目標/新檔名.md"
 ```
 
 等用戶回覆後執行搬移（同 Step 7 流程）。全部自動就跳過。
+
+### Step 8.5 — 更新 MOC（Map of Content）
+
+對每個今次有筆記搬入嘅資料夾，更新（或建立）`_index.md`。
+
+**流程：**
+1. 列出該 folder 內所有 `.md` 檔案（排除 `_index.md`）
+2. 對每篇讀 frontmatter `title`、`date`、`quality`，加上內容首段提煉一句摘要（≤ 20 字）
+3. 按日期倒序排列
+4. 用 Write tool 寫入 `_index.md`（覆蓋舊版）：
+
+```markdown
+# {Folder Name}
+
+> 自動生成，上次更新：YYYY-MM-DD
+
+| 筆記 | 日期 | 品質 | 摘要 |
+|------|------|------|------|
+| [[筆記名]] | 2026-03-26 | high | 一句摘要 |
+| [[筆記名]] | 2026-03-25 | medium | 一句摘要 |
+
+共 N 篇筆記
+```
+
+**注意：**
+- 只更新有筆記搬入嘅 folder，唔使全 vault 更新
+- 子資料夾（例如 `TEC - TechPulse/`）有自己嘅 `_index.md`，唔好同父資料夾混合
+- `99 - Archive/` 唔使建 MOC
+- `40 - Daily/` 唔使建 MOC
+- 摘要用筆記內容提煉，**唔好用 frontmatter title 直接抄**（title 往往太短）
 
 ### Step 9 — 生成 Daily Report
 

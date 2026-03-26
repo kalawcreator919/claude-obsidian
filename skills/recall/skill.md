@@ -42,6 +42,18 @@ Examples:
 
 **Run all search terms in parallel.** If results are too many (>50 notes), take only the top 10 matches per method.
 
+**Quality field:** For files in the search results, use Grep to check for a `quality:` frontmatter field. If present, note the value (high/medium/low) for use in Step 3 scoring.
+
+### Step 2.5 — Semantic Search (if vault-semantic-search MCP is available)
+
+If the `semantic_search` tool is available (user has the vault-semantic-search MCP server installed):
+
+1. Call `semantic_search(query=user's search terms, top_k=10)`
+2. Add results to the Step 3 candidate pool, tagged as "semantic match"
+3. Semantic search can find notes that use different wording but are conceptually related (e.g., searching "managing lots of notes" finds "knowledge management optimization")
+
+If the `semantic_search` tool is **not available** (user hasn't installed it), **skip this step** and rely on keyword search only. Do not raise an error.
+
 ### Step 3 — Score and Rank
 
 Deduplicate all results, then score:
@@ -54,6 +66,11 @@ Deduplicate all results, then score:
 | Located in `30 - Notes/` | +2 bonus |
 | Located in `10 - Projects/` | +1 bonus |
 | Recently modified (within 30 days) | +1 bonus |
+| `quality: high` | +3 bonus |
+| `quality: medium` | +1 bonus |
+| `quality: low` | +0 |
+| semantic_search score > 0.7 | +4 bonus |
+| semantic_search score 0.5-0.7 | +2 bonus |
 
 Take Top 10. Break ties by folder priority: 30 > 10 > 20 > 00 > 40 > 99.
 

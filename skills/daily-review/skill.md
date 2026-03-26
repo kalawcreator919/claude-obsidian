@@ -113,6 +113,24 @@ Using the vault context from Step 2 (no rescan needed), for each note to be move
 
 **Only add meaningful links — do not add links for the sake of it.**
 
+### Step 6.5 — Quality Grading
+
+For each note being moved (excluding those going to Archive), automatically determine a quality grade and write it into the frontmatter.
+
+**Grading rules:**
+
+| quality | Criteria (meeting any one is sufficient) |
+|---------|----------------------------------------|
+| `high` | Contains decision records, technical details, or original insights; wikilinks >= 3; word count > 300 with structure (>= 3 sections) |
+| `medium` | Has structure (>= 2 sections); word count 100-300; has frontmatter with tags >= 2 |
+| `low` | Pure clipboard paste / no structure / fewer than 100 words / frontmatter missing fields |
+
+**Execution:** Use the Edit tool to add `quality: high/medium/low` to the frontmatter (insert after `status:`).
+
+**Notes:**
+- Notes going to `99 - Archive/` do not need quality grading
+- Notes that already have a `quality` field should not be overwritten
+
 ### Step 7 — Execute Moves (Auto Portion)
 
 Execute moves for all notes with confidence >80%.
@@ -150,6 +168,36 @@ The following notes need your decision on where to file them:
 ```
 
 Wait for user response, then execute moves (same flow as Step 7). If all notes were auto-moved, skip this step.
+
+### Step 8.5 — Update MOC (Map of Content)
+
+For each folder that received notes in this session, update (or create) its `_index.md`.
+
+**Workflow:**
+1. List all `.md` files in the folder (excluding `_index.md`)
+2. For each note, read frontmatter `title`, `date`, `quality`, plus distill a one-line summary (<= 20 words) from the opening paragraph
+3. Sort by date in descending order
+4. Use the Write tool to write `_index.md` (overwrite the old version):
+
+```markdown
+# {Folder Name}
+
+> Auto-generated, last updated: YYYY-MM-DD
+
+| Note | Date | Quality | Summary |
+|------|------|---------|---------|
+| [[Note Name]] | 2026-03-26 | high | One-line summary |
+| [[Note Name]] | 2026-03-25 | medium | One-line summary |
+
+Total: N notes
+```
+
+**Notes:**
+- Only update folders that received notes in this session — do not update the entire vault
+- Subfolders (e.g., `TEC - TechPulse/`) have their own `_index.md` — do not mix with parent folder
+- `99 - Archive/` does not need a MOC
+- `40 - Daily/` does not need a MOC
+- Summaries should be distilled from note content — **do not simply copy the frontmatter title** (titles are often too brief)
 
 ### Step 9 — Generate Daily Report
 

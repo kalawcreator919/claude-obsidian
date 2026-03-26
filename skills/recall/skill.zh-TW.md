@@ -42,6 +42,18 @@ description: Use when user wants to find old Obsidian notes by keyword, topic, o
 
 **所有搜索詞 parallel 跑。** 如果結果太多（>50 篇），只取每種方式前 10 個 match。
 
+**品質欄位：** 對搜索結果嘅檔案，用 Grep 檢查有冇 `quality:` frontmatter 欄位。有就記低值（high/medium/low），用喺 Step 3 評分。
+
+### Step 2.5 — 語意搜索（如有 vault-semantic-search MCP）
+
+如果 `semantic_search` tool 可用（用戶裝咗 vault-semantic-search MCP server）：
+
+1. Call `semantic_search(query=用戶搜索詞, top_k=10)`
+2. 將結果加入 Step 3 嘅候選池，標記為 "semantic match"
+3. 語意搜索可以搵到用詞唔同但意思相關嘅筆記（例如搜「管理大量筆記」搵到「knowledge management optimization」）
+
+如果 `semantic_search` tool **唔可用**（用戶未裝），**跳過呢步**，純用 keyword search。唔好報錯。
+
 ### Step 3 — 評分排序
 
 對所有結果去重後評分：
@@ -54,6 +66,11 @@ description: Use when user wants to find old Obsidian notes by keyword, topic, o
 | 位於 `30 - Notes/` | +2 bonus |
 | 位於 `10 - Projects/` | +1 bonus |
 | 近期修改（30 日內） | +1 bonus |
+| `quality: high` | +3 bonus |
+| `quality: medium` | +1 bonus |
+| `quality: low` | +0 |
+| semantic_search score > 0.7 | +4 bonus |
+| semantic_search score 0.5-0.7 | +2 bonus |
 
 取 Top 10，同分按資料夾優先級排：30 > 10 > 20 > 00 > 40 > 99。
 
