@@ -11,7 +11,7 @@ description: Use when Obsidian Inbox has notes to process - splits multi-topic n
 
 ## 常量
 
-- **Vault**：`C:/Users/Kenneth/Desktop/Obsidian`
+- **Vault**：`{{VAULT}}`
 - **今日日期**：用 `date +%Y-%m-%d` 取得
 
 ## Process
@@ -132,7 +132,7 @@ description: Use when Obsidian Inbox has notes to process - splits multi-topic n
 
 **搬移指令：**
 ```bash
-mv "C:/Users/Kenneth/Desktop/Obsidian/來源/檔名.md" "C:/Users/Kenneth/Desktop/Obsidian/目標/新檔名.md"
+mv "{{VAULT}}/來源/檔名.md" "{{VAULT}}/目標/新檔名.md"
 ```
 
 ### Step 8 — 待確認清單

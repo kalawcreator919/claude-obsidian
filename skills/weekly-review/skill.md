@@ -7,7 +7,7 @@ description: Use when a week has passed since last review, or user wants to anal
 
 每週知識回顧 — 分析 Obsidian vault 嘅知識累積方向，resurface 有價值嘅舊筆記。
 
-**Vault 路徑：** `C:/Users/Kenneth/Desktop/Obsidian`
+**Vault 路徑：** `{{VAULT}}`
 **Report 輸出：** `40 - Daily/YYYY-MM-DD Weekly Review.md`
 **唯讀：** 只分析，唔改任何現有筆記
 
@@ -18,9 +18,9 @@ description: Use when a week has passed since last review, or user wants to anal
 掃描 vault 結構，了解現有 Projects/Areas/Notes：
 
 ```bash
-ls "C:/Users/Kenneth/Desktop/Obsidian/10 - Projects/"
-ls "C:/Users/Kenneth/Desktop/Obsidian/20 - Areas/"
-ls "C:/Users/Kenneth/Desktop/Obsidian/30 - Notes/"
+ls "{{VAULT}}/10 - Projects/"
+ls "{{VAULT}}/20 - Areas/"
+ls "{{VAULT}}/30 - Notes/"
 ```
 
 ### Step 2 — 收集本週資料
@@ -28,7 +28,7 @@ ls "C:/Users/Kenneth/Desktop/Obsidian/30 - Notes/"
 搵過去 7 日內新增或修改嘅所有 `.md` 筆記：
 
 ```bash
-find "C:/Users/Kenneth/Desktop/Obsidian" -name "*.md" -mtime -7 -not -path "*/.obsidian/*" -not -path "*/.trash/*"
+find "{{VAULT}}" -name "*.md" -mtime -7 -not -path "*/.obsidian/*" -not -path "*/.trash/*"
 ```
 
 用 Read tool 讀取每篇筆記，記錄：
@@ -63,7 +63,7 @@ find "C:/Users/Kenneth/Desktop/Obsidian" -name "*.md" -mtime -7 -not -path "*/.o
 基於 Step 3 嘅 3 個核心主題，用 Grep tool 搵相關嘅舊筆記（超過 7 日前）：
 
 ```
-Grep: pattern = "主題關鍵字", path = "C:/Users/Kenneth/Desktop/Obsidian", glob = "**/*.md", output_mode = "files_with_matches", -i = true
+Grep: pattern = "主題關鍵字", path = "{{VAULT}}", glob = "**/*.md", output_mode = "files_with_matches", -i = true
 ```
 
 排除本週已處理嘅筆記。每個主題搵 1-3 篇，簡述點解值得重新睇。

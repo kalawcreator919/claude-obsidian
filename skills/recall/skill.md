@@ -9,7 +9,7 @@ description: Use when user wants to find old Obsidian notes by keyword, topic, o
 
 **只做搜索同展示，絕對唔移動或修改任何筆記。**
 
-**Vault：** `C:/Users/Kenneth/Desktop/Obsidian`
+**Vault：** `{{VAULT}}`
 
 ## Process
 
@@ -27,17 +27,17 @@ description: Use when user wants to find old Obsidian notes by keyword, topic, o
 
 1. **文件名** — Glob tool：
    ```
-   Glob: pattern = "**/*keyword*", path = "C:/Users/Kenneth/Desktop/Obsidian"
+   Glob: pattern = "**/*keyword*", path = "{{VAULT}}"
    ```
 
 2. **Tags** — Grep tool：
    ```
-   Grep: pattern = "tags:.*keyword", path = "C:/Users/Kenneth/Desktop/Obsidian", glob = "**/*.md", -i = true
+   Grep: pattern = "tags:.*keyword", path = "{{VAULT}}", glob = "**/*.md", -i = true
    ```
 
 3. **內容** — Grep tool（直接攞 context，唔使之後再 Read）：
    ```
-   Grep: pattern = "keyword", path = "C:/Users/Kenneth/Desktop/Obsidian", glob = "**/*.md", -i = true, output_mode = "content", -C = 2, head_limit = 50
+   Grep: pattern = "keyword", path = "{{VAULT}}", glob = "**/*.md", -i = true, output_mode = "content", -C = 2, head_limit = 50
    ```
 
 **所有搜索詞 parallel 跑。** 如果結果太多（>50 篇），只取每種方式前 10 個 match。

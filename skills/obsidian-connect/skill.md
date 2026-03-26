@@ -15,7 +15,7 @@ description: Use when connecting to Obsidian, verifying vault access, or trouble
 
 ## Connection
 
-**Vault:** `C:\Users\Kenneth\Desktop\Obsidian`
+**Vault:** `{{VAULT}}`
 **Method:** Obsidian CLI（需要 Obsidian 1.12+ 運行中 + Settings → General → CLI 開啟）
 
 ### 驗證連接
@@ -56,9 +56,9 @@ obsidian read vault="Obsidian" file="Home"
 用 Read/Write/Edit tool 直接操作 vault markdown 檔案：
 
 ```
-Read: C:\Users\Kenneth\Desktop\Obsidian\00 - Inbox\筆記名.md
-Write: C:\Users\Kenneth\Desktop\Obsidian\00 - Inbox\新筆記.md
-Edit: C:\Users\Kenneth\Desktop\Obsidian\30 - Notes\現有筆記.md
+Read: {{VAULT}}\00 - Inbox\筆記名.md
+Write: {{VAULT}}\00 - Inbox\新筆記.md
+Edit: {{VAULT}}\30 - Notes\現有筆記.md
 ```
 
 ## Common Mistakes
