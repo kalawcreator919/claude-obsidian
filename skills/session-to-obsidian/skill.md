@@ -125,9 +125,9 @@ source: "Claude Code Session"
 掃描 Obsidian vault 搵相關筆記，加 `[[wikilinks]]`：
 
 1. 用 Glob tool 搵 vault 入面嘅 `.md` 檔案，優先搜尋：
-   - `C:/Users/Kenneth/Desktop/Obsidian/30 - Notes/*.md`
-   - `C:/Users/Kenneth/Desktop/Obsidian/10 - Projects/*.md`
-   - `C:/Users/Kenneth/Desktop/Obsidian/20 - Areas/*.md`
+   - `{{VAULT}}/30 - Notes/*.md`
+   - `{{VAULT}}/10 - Projects/*.md`
+   - `{{VAULT}}/20 - Areas/*.md`
 2. 根據 session 主題（keywords、project names、tool names）match 相關筆記
 3. 將匹配到嘅筆記名加入「相關連結」section，格式 `[[筆記名]]`（唔包 `.md`）
 4. 如果搵唔到相關筆記，留空或寫「暫無相關筆記」
@@ -138,12 +138,12 @@ source: "Claude Code Session"
 
 用 Write tool 寫入：
 ```
-Write tool → file_path: "C:/Users/Kenneth/Desktop/Obsidian/00 - Inbox/YYYY-MM-DD [Title].md"
+Write tool → file_path: "{{VAULT}}/00 - Inbox/YYYY-MM-DD [Title].md"
 ```
 
 ### Step 6.5 — 更新 Status Dashboard
 
-用 Read tool 讀 `C:/Users/Kenneth/Desktop/Obsidian/01 - Active/Status Dashboard.md`，然後用 Edit tool 更新以下 section：
+用 Read tool 讀 `{{VAULT}}/01 - Active/Status Dashboard.md`，然後用 Edit tool 更新以下 section：
 
 1. **「進行中項目」表格** — 根據 session 內容更新項目狀態、下一步、優先級
    - 新項目加入表格

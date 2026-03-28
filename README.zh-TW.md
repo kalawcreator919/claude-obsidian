@@ -19,7 +19,7 @@
 1. 複製儲存庫：
 
    ```bash
-   git clone https://github.com/kennethlaw325/claude-obsidian.git
+   git clone https://github.com/kalawcreator919/claude-obsidian.git
    ```
 
 2. 執行安裝腳本：

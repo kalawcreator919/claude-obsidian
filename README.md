@@ -19,7 +19,7 @@ Turn your Obsidian vault into a structured second brain — capture sessions, pr
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/kennethlaw325/claude-obsidian.git
+   git clone https://github.com/kalawcreator919/claude-obsidian.git
    ```
 
 2. Run the setup script:

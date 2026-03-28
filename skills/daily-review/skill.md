@@ -11,7 +11,7 @@ description: Use when Obsidian Inbox has notes to process - splits multi-topic n
 
 ## 常量
 
-- **Vault**：`C:/Users/Kenneth/Desktop/Obsidian`
+- **Vault**：`{{VAULT}}`
 - **今日日期**：用 `date +%Y-%m-%d` 取得
 
 ## Process
@@ -150,7 +150,7 @@ description: Use when Obsidian Inbox has notes to process - splits multi-topic n
 
 **搬移指令：**
 ```bash
-mv "C:/Users/Kenneth/Desktop/Obsidian/來源/檔名.md" "C:/Users/Kenneth/Desktop/Obsidian/目標/新檔名.md"
+mv "{{VAULT}}/來源/檔名.md" "{{VAULT}}/目標/新檔名.md"
 ```
 
 ### Step 8 — 待確認清單
@@ -201,7 +201,7 @@ mv "C:/Users/Kenneth/Desktop/Obsidian/來源/檔名.md" "C:/Users/Kenneth/Deskto
 
 ### Step 8.7 — 更新 Status Dashboard
 
-用 Read tool 讀 `C:/Users/Kenneth/Desktop/Obsidian/01 - Active/Status Dashboard.md`，然後用 Edit tool 更新：
+用 Read tool 讀 `{{VAULT}}/01 - Active/Status Dashboard.md`，然後用 Edit tool 更新：
 
 1. **「進行中項目」表格** — 根據今次 review 嘅筆記內容，更新項目狀態：
    - 如果發現某項目有新進展（例如新嘅研究筆記、新嘅 session 記錄），更新狀態同下一步
