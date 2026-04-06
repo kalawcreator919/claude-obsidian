@@ -3,13 +3,14 @@ set -e
 
 # ─────────────────────────────────────────────
 # claude-obsidian setup script
-# Installs Obsidian skills for Claude Code
+# Installs Obsidian knowledge compilation skills for Claude Code
 # ─────────────────────────────────────────────
 
-SKILLS=(daily-review session-to-obsidian recall weekly-review monthly-review obsidian-connect)
+SKILLS=(daily-review session-to-obsidian recall weekly-review monthly-review obsidian-connect vault-lint)
 SKILLS_DIR="$HOME/.claude/skills"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SOURCE_SKILLS_DIR="$SCRIPT_DIR/skills"
+CONFIG_FILE="$SOURCE_SKILLS_DIR/.vault-config"
 
 # Colors (skip if not a terminal)
 if [ -t 1 ]; then
@@ -17,23 +18,41 @@ if [ -t 1 ]; then
   GREEN='\033[0;32m'
   YELLOW='\033[0;33m'
   CYAN='\033[0;36m'
+  RED='\033[0;31m'
   RESET='\033[0m'
 else
-  BOLD='' GREEN='' YELLOW='' CYAN='' RESET=''
+  BOLD='' GREEN='' YELLOW='' CYAN='' RED='' RESET=''
 fi
 
 info()  { echo -e "${CYAN}[info]${RESET}  $*"; }
 ok()    { echo -e "${GREEN}[ok]${RESET}    $*"; }
 warn()  { echo -e "${YELLOW}[warn]${RESET}  $*"; }
+err()   { echo -e "${RED}[err]${RESET}   $*"; }
 
-# ── 1. Ask for vault path ────────────────────
-DEFAULT_VAULT="$HOME/Documents/Obsidian"
+# ── 1. Determine vault path ────────────────────
 echo ""
-echo -e "${BOLD}Obsidian Skills Installer${RESET}"
-echo "────────────────────────"
+echo -e "${BOLD}claude-obsidian — Knowledge Compilation Skills Installer${RESET}"
+echo "──────────────────────────────────────────────────────────"
 echo ""
-read -rp "Obsidian vault path [$DEFAULT_VAULT]: " VAULT_PATH
-VAULT_PATH="${VAULT_PATH:-$DEFAULT_VAULT}"
+
+# Check for existing config
+if [ -f "$CONFIG_FILE" ]; then
+  SAVED_PATH="$(cat "$CONFIG_FILE")"
+  info "Found saved vault path: $SAVED_PATH"
+fi
+
+# Check for VAULT_PATH environment variable
+if [ -n "$VAULT_PATH" ]; then
+  DEFAULT_VAULT="$VAULT_PATH"
+  info "Using VAULT_PATH environment variable: $VAULT_PATH"
+elif [ -n "$SAVED_PATH" ]; then
+  DEFAULT_VAULT="$SAVED_PATH"
+else
+  DEFAULT_VAULT="$HOME/Documents/Obsidian"
+fi
+
+read -rp "Obsidian vault path [$DEFAULT_VAULT]: " INPUT_PATH
+VAULT_PATH="${INPUT_PATH:-$DEFAULT_VAULT}"
 
 # Expand ~ if user typed it literally
 VAULT_PATH="${VAULT_PATH/#\~/$HOME}"
@@ -44,6 +63,10 @@ VAULT_PATH="$(cd "$VAULT_PATH" 2>/dev/null && pwd || echo "$VAULT_PATH")"
 if [ ! -d "$VAULT_PATH" ]; then
   warn "Directory '$VAULT_PATH' does not exist yet — it will be created."
 fi
+
+# Save vault path to config
+echo "$VAULT_PATH" > "$CONFIG_FILE"
+ok "Vault path saved to $CONFIG_FILE"
 
 # ── 2. Ask for language ──────────────────────
 echo ""
@@ -60,17 +83,30 @@ esac
 
 # ── 3. Verify source skills exist ────────────
 if [ ! -d "$SOURCE_SKILLS_DIR" ]; then
-  echo "Error: skills directory not found at $SOURCE_SKILLS_DIR"
+  err "Skills directory not found at $SOURCE_SKILLS_DIR"
   exit 1
 fi
 
+MISSING=()
 for skill in "${SKILLS[@]}"; do
   src="$SOURCE_SKILLS_DIR/$skill/$SKILL_SOURCE"
   if [ ! -f "$src" ]; then
-    echo "Error: missing skill file: $src"
-    exit 1
+    # Fall back to English if Chinese version is missing
+    if [ "$SKILL_SOURCE" = "skill.zh-TW.md" ] && [ -f "$SOURCE_SKILLS_DIR/$skill/skill.md" ]; then
+      warn "$skill: Chinese version not found, using English"
+    else
+      MISSING+=("$src")
+    fi
   fi
 done
+
+if [ ${#MISSING[@]} -gt 0 ]; then
+  err "Missing skill files:"
+  for m in "${MISSING[@]}"; do
+    echo "  - $m"
+  done
+  exit 1
+fi
 
 # ── 4. Create required vault folders ─────────
 echo ""
@@ -91,7 +127,7 @@ done
 echo ""
 read -rp "Create recommended folders (10-Projects, 20-Areas, 30-Notes)? [y/N]: " CREATE_RECOMMENDED
 if [[ "$CREATE_RECOMMENDED" =~ ^[Yy]$ ]]; then
-  RECOMMENDED_DIRS=("10 - Projects" "20 - Areas" "30 - Notes")
+  RECOMMENDED_DIRS=("01 - Active" "10 - Projects" "20 - Areas" "30 - Notes")
   for dir in "${RECOMMENDED_DIRS[@]}"; do
     target="$VAULT_PATH/$dir"
     if [ ! -d "$target" ]; then
@@ -115,7 +151,12 @@ BACKED_UP=()
 for skill in "${SKILLS[@]}"; do
   dest_dir="$SKILLS_DIR/$skill"
   dest_file="$dest_dir/skill.md"
+
+  # Determine source file (prefer selected language, fall back to English)
   src_file="$SOURCE_SKILLS_DIR/$skill/$SKILL_SOURCE"
+  if [ ! -f "$src_file" ]; then
+    src_file="$SOURCE_SKILLS_DIR/$skill/skill.md"
+  fi
 
   # Backup existing skill
   if [ -f "$dest_file" ]; then
@@ -128,22 +169,45 @@ for skill in "${SKILLS[@]}"; do
   # Copy skill file (always install as skill.md)
   cp "$src_file" "$dest_file"
 
-  # Replace {{VAULT}} with actual vault path
+  # Replace $VAULT_PATH placeholder with actual vault path
   # Use | as sed delimiter to avoid issues with / in paths
+  sed -i "s|\\\$VAULT_PATH|$VAULT_PATH|g" "$dest_file"
+
+  # Also replace legacy {{VAULT}} placeholder for compatibility
   sed -i "s|{{VAULT}}|$VAULT_PATH|g" "$dest_file"
 
   INSTALLED+=("$skill")
 done
 
-# ── 7. Summary ────────────────────────────────
+# ── 7. Verify Obsidian access ─────────────────
 echo ""
-echo "════════════════════════════════════════"
+info "Verifying Obsidian vault access..."
+
+if [ -d "$VAULT_PATH/.obsidian" ]; then
+  ok "Obsidian vault detected (.obsidian/ directory found)"
+elif [ -d "$VAULT_PATH" ]; then
+  warn "Directory exists but no .obsidian/ found — is this an Obsidian vault?"
+else
+  warn "Vault directory does not exist yet — create it or open Obsidian to initialize"
+fi
+
+# Check if Obsidian CLI is available
+if command -v obsidian &>/dev/null; then
+  ok "Obsidian CLI found in PATH"
+else
+  info "Obsidian CLI not found — skills will use file system fallback (Read/Write/Edit tools)"
+fi
+
+# ── 8. Summary ────────────────────────────────
+echo ""
+echo "════════════════════════════════════════════"
 echo -e "${BOLD}Installation Summary${RESET}"
-echo "════════════════════════════════════════"
+echo "════════════════════════════════════════════"
 echo ""
 echo "  Vault path:   $VAULT_PATH"
 echo "  Language:      $LANG_LABEL"
 echo "  Skills dir:   $SKILLS_DIR"
+echo "  Config file:  $CONFIG_FILE"
 echo ""
 
 if [ ${#BACKED_UP[@]} -gt 0 ]; then
@@ -154,7 +218,7 @@ if [ ${#BACKED_UP[@]} -gt 0 ]; then
   echo ""
 fi
 
-echo "  Installed skills:"
+echo "  Installed skills (${#INSTALLED[@]}):"
 for s in "${INSTALLED[@]}"; do
   echo -e "    ${GREEN}+${RESET} $s"
 done
@@ -172,4 +236,10 @@ fi
 
 echo ""
 ok "Done. Restart Claude Code to load the new skills."
+echo ""
+echo "  Try these commands after restart:"
+echo "    /obsidian-connect     — verify vault connection"
+echo "    /session-to-obsidian  — save your first session"
+echo "    /daily-review         — process your inbox"
+echo "    /vault-lint           — check vault health"
 echo ""
