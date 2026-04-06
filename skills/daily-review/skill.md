@@ -298,7 +298,8 @@ The following notes have no wikilinks — consider adding connections:
 
 ## Guidelines
 
-1. **Do not rewrite note content** — Only modify frontmatter (title, tags, status) and add wikilinks. When splitting, extract original text without summarizing.
+1. **Splitting is mandatory** — Every daily review MUST check each note for splitting (Step 4). Notes with `+` in the title connecting multiple topics MUST be split. Never skip splitting and move directly to Archive. One topic = one note is the core principle.
+2. **Do not rewrite note content** — Only modify frontmatter (title, tags, status) and add wikilinks. When splitting, extract original text without summarizing.
 2. **Move with `mv`** — Do not copy + delete.
 3. **Assertion-style titles** — Only for notes going to `30 - Notes/` (e.g., "Git Hooks" becomes "Git hooks can automate pre-commit checks").
 4. **Preserve frontmatter** — Never delete existing fields when moving.
@@ -312,4 +313,4 @@ The following notes have no wikilinks — consider adding connections:
 - [[recall]] — Search for notes after they have been filed
 - [[vault-lint]] — Health check complements daily review
 - [[weekly-review]] — Aggregates daily review outcomes
-- [[process-raw]] — Standalone raw clip processing (this skill includes it inline)
+- [[vault-lint]] — Vault health check after filing completes
